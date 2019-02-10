@@ -22,7 +22,7 @@ const getChangeCounterCommand = (counter) => (
 )
 
 const sendCommand = (command) => {
-    console.log('Sending command');
+    console.log('Sending command', command);
     ws.send(JSON.stringify(command));
 }
 

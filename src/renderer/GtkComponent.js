@@ -1,10 +1,10 @@
-import { updateStatus } from '../hardwareDriver/miioController';
+import { updateStatus } from '../network/gtkController';
 
 const ROOT_KEY = '_ROOT_';
 
-const restrictedProps = ['id', 'address', 'token', 'type', 'children'];
+const restrictedProps = ['id', 'type', 'children'];
 
-const ReactSmartDomComponent = {
+const GtkComponent = {
     createElement(tag, props, rootContainerElement/* , hostContext */) {
         return Object.assign({ [ROOT_KEY]: rootContainerElement }, props);
     },
@@ -12,7 +12,7 @@ const ReactSmartDomComponent = {
     setInitialProperties(element, tag, rawProps/* , rootContainerElement */) {
         Object.assign(element, rawProps);
 
-        if (tag === 'device') {
+        if (tag === 'widget') {
             updateStatus(rawProps);
         }
     },
@@ -40,5 +40,5 @@ const ReactSmartDomComponent = {
     },
 };
 
-export default ReactSmartDomComponent;
+export default GtkComponent;
 

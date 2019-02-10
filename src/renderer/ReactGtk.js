@@ -1,5 +1,5 @@
 // import { createElement } from '../utils/createElement';
-import SmartDOMRenderer from './SmartDOMRenderer';
+import ReactGtkRenderer from './ReactGtkRenderer';
 import '../devtools/setupDevtoolsFiber';
 
 const createElement = (type, props) => ({
@@ -16,15 +16,15 @@ const ReactSmartDOM = {
     render(element) {
         const container = createElement('ROOT');
 
-        const node = SmartDOMRenderer.createContainer(container);
+        const node = ReactGtkRenderer.createContainer(container);
 
-        SmartDOMRenderer.injectIntoDevTools({
+        ReactGtkRenderer.injectIntoDevTools({
             bundleType: 1, // 0 for PROD, 1 for DEV
             version: '0.1.0', // version for your renderer
             rendererPackageName: 'react-smart-dom', // package name
-            findHostInstanceByFiber: SmartDOMRenderer.findHostInstance, // host instance (root)
+            findHostInstanceByFiber: ReactGtkRenderer.findHostInstance, // host instance (root)
         });
-        SmartDOMRenderer.updateContainer(element, node, null);
+        ReactGtkRenderer.updateContainer(element, node, null);
     },
 };
 
@@ -33,9 +33,9 @@ const ReactSmartDOM = {
  */
 export function testRenderer(element) {
     const container = createElement('ROOT');
-    const node = SmartDOMRenderer.createContainer(container);
+    const node = ReactGtkRenderer.createContainer(container);
 
-    SmartDOMRenderer.updateContainer(element, node, null);
+    ReactGtkRenderer.updateContainer(element, node, null);
 
     return container;
 }
