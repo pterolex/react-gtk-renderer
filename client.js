@@ -4,6 +4,8 @@ const ws = new WebSocket('ws://localhost:9000');
 
 let counter = 0;
 
+const ROOT_ID = 0;
+const GRID_ID = 1;
 const DECREASE_BUTTON = 2;
 const INCREASE_BUTTON = 3;
 const LABEL_ID = 4;
@@ -43,9 +45,6 @@ ws.on('message', function incoming(dataString) {
             return;
         }
 
-        console.log('isIncrease', isIncrease);
-        console.log('isDecrease', isDecrease);
-        console.log('elementId', elementId);
         counter += isDecrease ? -1 : +1;
         const command = getChangeCounterCommand(counter);
 
@@ -61,10 +60,20 @@ const getCommands = () => (
     [
         {
             id: 1,
+            elementId: GRID_ID,
+            command: "create_element",
+            args: [
+                "grid",
+                ROOT_ID
+            ]
+        },
+        {
+            id: 1,
             elementId: DECREASE_BUTTON,
             command: "create_element",
             args: [
-                "button"
+                "button",
+                GRID_ID,
             ]
         },
         {
@@ -72,7 +81,8 @@ const getCommands = () => (
             elementId: LABEL_ID,
             command: "create_element",
             args: [
-                "label"
+                "label",
+                GRID_ID,
             ]
         },
         {
@@ -80,7 +90,8 @@ const getCommands = () => (
             elementId: INCREASE_BUTTON,
             command: "create_element",
             args: [
-                "button"
+                "button",
+                GRID_ID,
             ]
         },
         {
@@ -88,7 +99,8 @@ const getCommands = () => (
             elementId: 5,
             command: "create_element",
             args: [
-                "progress"
+                "progress",
+                GRID_ID,
             ]
         },
         {
