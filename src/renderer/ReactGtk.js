@@ -12,7 +12,7 @@ const createElement = (type, props) => ({
  * @param {Object} element
  */
 
-const ReactSmartDOM = {
+const ReactGtk = {
     render(element) {
         const container = createElement('ROOT');
 
@@ -40,4 +40,4 @@ export function testRenderer(element) {
     return container;
 }
 
-export default ReactSmartDOM;
+export default ReactGtk;

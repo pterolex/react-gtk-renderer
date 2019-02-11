@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import ReactSmartDOM from '../renderer/render';
+import ReactGtk from '../renderer/ReactGtk';
 import Button from '../components/Button';
 
 import config from './config';
@@ -19,7 +19,7 @@ class BenjaminButtonApp extends Component {
     }
 }
 
-ReactSmartDOM.render(
+ReactGtk.render(
     <BenjaminButtonApp />,
     'CONTAINER',
     () => {

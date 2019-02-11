@@ -1,4 +1,5 @@
-import { updateStatus } from '../network/gtkController';
+// import { updateStatus } from '../network/gtkController';
+import { createGtkElement, updateGtkElement } from '../network/gtkConnection';
 
 const ROOT_KEY = '_ROOT_';
 
@@ -13,7 +14,7 @@ const GtkComponent = {
         Object.assign(element, rawProps);
 
         if (tag === 'widget') {
-            updateStatus(rawProps);
+            createGtkElement(rawProps);
         }
     },
 
@@ -34,8 +35,8 @@ const GtkComponent = {
             }
         });
 
-        if (type === 'device') {
-            updateStatus(updatedProps);
+        if (type === 'widget') {
+            updateGtkElement(updatedProps);
         }
     },
 };

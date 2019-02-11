@@ -1,3 +1,3 @@
 require('babel-register');
 
-require('./buttonDemo.jsx');
+require('./buttonDemo.js');

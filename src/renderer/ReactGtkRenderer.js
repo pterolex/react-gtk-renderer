@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 import emptyObject from 'fbjs/lib/emptyObject'
-import ReactSmartDomComponent from './ReactSmartDomComponent';
+import GtkComponent from './GtkComponent';
 
 const Reconciler = require('react-reconciler');
 
@@ -9,7 +9,7 @@ const {
     createElement,
     setInitialProperties,
     updateProperties,
-} = ReactSmartDomComponent;
+} = GtkComponent;
 
 const RendererHostConfig = {
     appendInitialChild(parentInstance, child) {
@@ -113,6 +113,6 @@ const RendererHostConfig = {
     },
 }
 
-const SmartDOMRenderer = Reconciler(RendererHostConfig)
+const ReactGtkRenderer = Reconciler(RendererHostConfig)
 
-export default SmartDOMRenderer;
+export default ReactGtkRenderer;

@@ -15,6 +15,7 @@ class Button extends React.Component {
     render() {
         return (
             <widget
+                {...this.props}
                 type="button"
                 onClick={this.handleClick}
             />
