@@ -3,7 +3,6 @@ const WebSocket = require('ws');
 const chalk = require('chalk');
 
 let generalCommandId = 0;
-let generalWidgetId = 1;
 let connection;
 const commandsPool = [];
 const widgets = {};
@@ -18,12 +17,13 @@ const sendCommand = (command) => {
 
     connection.send(JSON.stringify(command));
 
+    generalCommandId++;
+
     commandsPool.shift();
 }
 
 const sendQueuedCommands = () => {
     if (commandsPool.length > 0) {
-        console.log(chalk.green('sendQueuedCommands'), commandsPool);
         const command = commandsPool[0];
 
         sendCommand(command);
@@ -69,10 +69,22 @@ const initConnection = (host, port) => {
     return ws;
 }
 
-const createGtkElement = (props) => {
+const appendGtkChild = (parentId, childId) => {
     const cmd = {
-        id: 1,
-        elementId: generalWidgetId,
+        id: generalCommandId,
+        elementId: parentId,
+        command: "append_child",
+        args: [
+            childId
+        ]
+    }
+
+    enqueueCommand(cmd);
+}
+const createGtkElement = (id, props) => {
+    const cmd = {
+        id: generalCommandId,
+        elementId: id,
         command: "create_element",
         args: [
             props.type,
@@ -81,20 +93,36 @@ const createGtkElement = (props) => {
         ]
     }
 
-    widgets[generalWidgetId] = Object.assign({}, props);
-
-    generalWidgetId++;
+    widgets[id] = Object.assign({}, props);
 
     enqueueCommand(cmd);
 }
 
-const updateGtkElement = (...args) => {
-    console.log('updateGtkElement', args);
+const updateGtkElement = (elementId, propName, value) => {
+    console.log('updateGtkElement', propName, value);
+    widgets[elementId] = Object.assign({}, widgets[elementId], { [propName]: value });
+
+    if (typeof value == 'function') {
+        return;
+    }
+
+    const cmd = {
+        id: generalCommandId,
+        elementId,
+        command: "set_" + propName.toLowerCase(),
+        args: [
+            value.toString(),
+        ]
+    }
+
+
+    enqueueCommand(cmd);
 }
 
 connection = initConnection();
 
 module.exports = {
+    appendGtkChild,
     createGtkElement,
     updateGtkElement,
 };

@@ -4,6 +4,7 @@ import '../devtools/setupDevtoolsFiber';
 
 const createElement = (type, props) => ({
     type: 'ROOT',
+    test: 123,
     props,
 });
 
