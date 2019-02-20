@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const chalk = require('chalk');
 
 const ws = new WebSocket('ws://localhost:9000');
 
@@ -22,16 +23,27 @@ const getChangeLabelCommand = (elementId, value) => (
     }
 )
 
+const stringifyCmd = (cmd) => JSON.stringify(cmd, null, 4);
+
 const sendCommand = (command) => {
-    console.log('Sending command', command);
+    console.log(chalk.green('\n\n>>>>>>>>>>>>>>Sending command>>>>>>>>>>>>>>>>>>>\n\n'));
+
+    console.log(stringifyCmd(command));
 
     ws.send(JSON.stringify(command));
+
+    console.log(chalk.green('\n\n=================End command==================='));
 }
 
 ws.on('message', function incoming(dataString) {
     try {
         const data = JSON.parse(dataString);
-        console.log(data);
+
+        console.log(chalk.yellow('\n\n<<<<<<<<<<<<<<Received event<<<<<<<<<<<<<<<<<<<\n\n'));
+
+        console.log(stringifyCmd(data));
+
+        console.log(chalk.yellow('\n\n=================End event====================='));
 
         const elementId = parseInt(data.elementId);
 
