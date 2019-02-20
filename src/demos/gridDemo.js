@@ -7,25 +7,26 @@ import Label from '../components/Label';
 
 import config from './config';
 
-class GripApp extends Component {
+// TODO: open dev tools!
+class DemoApp extends Component {
     state = {
         counter: 0,
         updatedAt: new Date().toTimeString()
     }
 
-    componentDidMount() {
-        setInterval(() => {
-            this.setState(prevState => ({
-                counter: prevState.counter + 1
-            }));
-        }, 1000);
-    }
-
-    handleClick = () => {
+    updateCounter = (addedValue) => {
         this.setState(prevState => ({
-            counter: 0,
+            counter: prevState.counter + addedValue,
             updatedAt: new Date().toTimeString()
         }));
+    }
+
+    handleDecreaseClick = () => {
+        this.updateCounter(-1);
+    }
+
+    handleIncreaseClick = () => {
+        this.updateCounter(1);
     }
 
     render() {
@@ -37,10 +38,14 @@ class GripApp extends Component {
         return (
             <Grid>
                 <Button
-                    label="Stop counter"
-                    onClick={this.handleClick}
+                    label="-"
+                    onClick={this.handleDecreaseClick}
                 />
                 <Label label={`Counter = ${counter}`} />
+                <Button
+                    label="+"
+                    onClick={this.handleIncreaseClick}
+                />
                 <Label label={`    Last click at ${updatedAt}`} />
             </Grid>
         );
@@ -48,7 +53,7 @@ class GripApp extends Component {
 }
 
 ReactGtk.render(
-    <GripApp />,
+    <DemoApp />,
     'CONTAINER',
     () => {
         console.log('Rendered <%s />', GripApp.name);

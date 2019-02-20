@@ -1,21 +1,26 @@
 
 const WebSocket = require('ws');
 const chalk = require('chalk');
+const fs = require('fs');
 
 let generalCommandId = 0;
 let connection;
 const commandsPool = [];
 const widgets = {};
 
+const eventsLogStream = fs.createWriteStream('reactLogs.log');
+
 const enqueueCommand = (command) => {
     console.log('Queueing command');
-    commandsPool.push(command)
+    commandsPool.push(command);
 }
 
 const sendCommand = (command) => {
     console.log('Sending command', command);
 
     connection.send(JSON.stringify(command));
+
+    eventsLogStream.write(`${JSON.stringify(command, null, 4)}\n\n`)
 
     generalCommandId++;
 
