@@ -25,7 +25,7 @@
     "author": "Alexey Zaslavsky <pterolex@gmail.com>",
     "license": "MIT",
     "dependencies": {
-        "chalk": "^2.4.1",
+        "chalk": "^2.4.2",
         "fbjs": "^0.8.6",
         "miio": "^0.15.6",
         "react": "^16.3.2",
