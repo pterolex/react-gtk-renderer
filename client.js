@@ -5,52 +5,53 @@ const ws = new WebSocket('ws://localhost:9000');
 let counter = 0;
 
 const ROOT_ID = 0;
-const GRID_ID = 1;
-const DECREASE_BUTTON = 2;
+const DECREASE_BUTTON = 1;
+const COUNTER_LABEL_ID = 2;
 const INCREASE_BUTTON = 3;
-const LABEL_ID = 4;
+const LAST_UPDATED_LABEL = 4;
+const GRID_ID = 5;
 
-const getChangeCounterCommand = (counter) => (
+const getChangeLabelCommand = (elementId, value) => (
     {
         id: 2,
-        elementId: 4,
         command: "set_label",
+        elementId,
         args: [
-            counter.toString()
+            value.toString()
         ]
     }
 )
 
 const sendCommand = (command) => {
     console.log('Sending command', command);
+
     ws.send(JSON.stringify(command));
 }
 
-ws.on('open', function open() {
-    // ws.send('something');
-});
-
 ws.on('message', function incoming(dataString) {
-    console.log('message', dataString);
-
     try {
         const data = JSON.parse(dataString);
         console.log(data);
 
         const elementId = parseInt(data.elementId);
+
+        // Mega code here:
         const isIncrease = elementId === INCREASE_BUTTON;
         const isDecrease = elementId === DECREASE_BUTTON;
 
+        // No, you don't need any other buttons!
         if (!isIncrease && !isDecrease) {
             return;
         }
 
         counter += isDecrease ? -1 : +1;
-        const command = getChangeCounterCommand(counter);
+        const counterCommand = getChangeLabelCommand(COUNTER_LABEL_ID, `Counter = ${counter}`);
+        const lastUpdateCommand = getChangeLabelCommand(LAST_UPDATED_LABEL, new Date().toString());
 
-        sendCommand(command);
+        sendCommand(counterCommand);
+        sendCommand(lastUpdateCommand);
     } catch(e) {
-        console.error('JSON parse error!', e);
+        console.error('Some random shit happened as always:', e);
     }
 });
 
@@ -59,82 +60,97 @@ ws.on('message', function incoming(dataString) {
 const getCommands = () => (
     [
         {
-            id: 1,
-            elementId: GRID_ID,
-            command: "create_element",
-            args: [
-                "grid",
-                ROOT_ID
-            ]
-        },
-        {
-            id: 1,
-            elementId: DECREASE_BUTTON,
-            command: "create_element",
-            args: [
+            "id": 0,
+            "elementId": DECREASE_BUTTON,
+            "command": "create_element",
+            "args": [
                 "button",
-                GRID_ID,
+                "-",
+                0
             ]
         },
         {
-            id: 1,
-            elementId: LABEL_ID,
-            command: "create_element",
-            args: [
+            "id": 0,
+            "elementId": COUNTER_LABEL_ID,
+            "command": "create_element",
+            "args": [
                 "label",
-                GRID_ID,
+                "Counter = 0",
+                0
             ]
         },
         {
-            id: 1,
-            elementId: INCREASE_BUTTON,
-            command: "create_element",
-            args: [
+            "id": 0,
+            "elementId": INCREASE_BUTTON,
+            "command": "create_element",
+            "args": [
                 "button",
-                GRID_ID,
+                "+",
+                0
             ]
         },
         {
-            id: 5,
-            elementId: 5,
-            command: "create_element",
-            args: [
-                "progress",
-                GRID_ID,
+            "id": 0,
+            "elementId": LAST_UPDATED_LABEL,
+            "command": "create_element",
+            "args": [
+                "label",
+                new Date().toString(),
+                0
             ]
         },
         {
-            id: 5,
-            elementId: 5,
-            command: "set_fraction",
-            args: [
-                0.6
+            "id": 0,
+            "elementId": GRID_ID,
+            "command": "create_element",
+            "args": [
+                "grid",
+                "",
+                0
             ]
         },
         {
-            id: 2,
-            elementId: INCREASE_BUTTON,
-            command: "set_label",
-            args: [
-                "Increase counter"
+            "id": 0,
+            "elementId": GRID_ID,
+            "command": "append_child",
+            "args": [
+                DECREASE_BUTTON
             ]
         },
         {
-            id: 2,
-            elementId: DECREASE_BUTTON,
-            command: "set_label",
-            args: [
-                "Decrease counter"
+            "id": 0,
+            "elementId": GRID_ID,
+            "command": "append_child",
+            "args": [
+                COUNTER_LABEL_ID
             ]
         },
         {
-            id: 3,
-            elementId: LABEL_ID,
-            command: "set_label",
-            args: [
-                "0"
+            "id": 0,
+            "elementId": GRID_ID,
+            "command": "append_child",
+            "args": [
+                INCREASE_BUTTON
             ]
-        }
+        },
+        {
+            "id": 0,
+            "elementId": GRID_ID,
+            "command": "append_child",
+            "args": [
+                LAST_UPDATED_LABEL
+            ]
+        },
+        {
+            "id": 0,
+            "elementId": ROOT_ID,
+            "command": "append_child",
+            "args": [
+                GRID_ID
+            ]
+        },
+
+
     ]
 )
 
@@ -145,10 +161,11 @@ setInterval(() => {
     const command = commands[commandCounter];
 
     if (command) {
-        sendCommand(command)
+        sendCommand(command);
+
+        commandCounter++;
     }
 
-    commandCounter++;
 }, 10);
 
 
