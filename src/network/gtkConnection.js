@@ -1,130 +1,146 @@
 
-const WebSocket = require('ws');
-const chalk = require('chalk');
-const fs = require('fs');
+// const WebSocket = require('ws');
+// const chalk = require('chalk');
+// const fs = require('fs');
+const config = require('../../etc/config.js');
+const ConnectionManager = require('../ConnectionManager');
 
-let generalCommandId = 0;
-let connection;
-const commandsPool = [];
+const { Logger } = require('../utils/logger');
+
+const logger = new Logger('GtkConnection');
+
+// let generalCommandId = 0;
+// let connection;
+// const commandsPool = [];
 const widgets = {};
 
-const eventsLogStream = fs.createWriteStream('reactLogs.log');
+// const eventsLogStream = fs.createWriteStream('reactLogs.log');
 
-const enqueueCommand = (command) => {
-    console.log('Queueing command');
-    commandsPool.push(command);
-}
+const connectionManager = new ConnectionManager({
+    wsServerPort: config.wssPort,
+    logger,
+});
 
-const sendCommand = (command) => {
-    console.log('Sending command', command);
+connectionManager.init();
 
-    connection.send(JSON.stringify(command));
+// const enqueueCommand = (command) => {
+//     console.log('Queueing command');
+//     commandsPool.push(command);
+// };
 
-    eventsLogStream.write(`${JSON.stringify(command, null, 4)}\n\n`)
+// const sendCommand = (command) => {
+//     console.log('Sending command', command);
 
-    generalCommandId++;
+//     connection.send(JSON.stringify(command));
 
-    commandsPool.shift();
-}
+//     eventsLogStream.write(`${JSON.stringify(command, null, 4)}\n\n`);
 
-const sendQueuedCommands = () => {
-    if (commandsPool.length > 0) {
-        const command = commandsPool[0];
+//     generalCommandId++;
 
-        sendCommand(command);
-    }
-}
+//     commandsPool.shift();
+// };
 
-const initConnection = (host, port) => {
+// const sendQueuedCommands = () => {
+//     if (commandsPool.length > 0) {
+//         const command = commandsPool[0];
 
-    const ws = new WebSocket('ws://localhost:9000');
+//         sendCommand(command);
+//     }
+// };
+
+// const initConnection = (host, port) => {
+//     const ws = new WebSocket('ws://localhost:9001');
 
 
-    ws.on('open', function open() {
-        console.log(chalk.yellow('Init connection', commandsPool.length));
+//     ws.on('open', () => {
+//         console.log(chalk.yellow('Init connection', commandsPool.length));
 
-        setInterval(() => {
-            sendQueuedCommands();
-        }, 100);
-    });
+//         setInterval(() => {
+//             sendQueuedCommands();
+//         }, 100);
+//     });
 
-    ws.on('message', function incoming(dataString) {
-        console.log('message', dataString);
+//     ws.on('message', (dataString) => {
+//         console.log('message', dataString);
 
-        try {
-            const data = JSON.parse(dataString);
-            console.log(data);
+//         try {
+//             const data = JSON.parse(dataString);
+//             console.log(data);
 
-            if (data.event === 'click') {
-                const elementId = parseInt(data.elementId);
+//             if (data.event === 'click') {
+//                 const elementId = parseInt(data.elementId);
 
-                const widget = widgets[elementId];
-                console.log('widgets', widgets);
-                console.log('call/onClick', data.elementId, widget);
+//                 const widget = widgets[elementId];
+//                 console.log('widgets', widgets);
+//                 console.log('call/onClick', data.elementId, widget);
 
-                if (widget && widget.onClick) {
-                    widget.onClick();
-                }
-             }
-        } catch (e) {
-            console.error('JSON parse error!', e);
-        }
-    });
+//                 if (widget && widget.onClick) {
+//                     widget.onClick();
+//                 }
+//             }
+//         } catch (e) {
+//             console.error('JSON parse error!', e);
+//         }
+//     });
 
-    return ws;
-}
+//     return ws;
+// };
 
 const appendGtkChild = (parentId, childId) => {
     const cmd = {
-        id: generalCommandId,
-        elementId: parentId,
-        command: "append_child",
+        // id: generalCommandId,
+        command: 'append_child',
         args: [
-            childId
-        ]
-    }
+            parentId,
+            childId,
+        ],
+    };
 
-    enqueueCommand(cmd);
-}
-const createGtkElement = (id, props) => {
+    // enqueueCommand(cmd);
+    connectionManager.send(cmd);
+};
+const createGtkElement = (elementId, props) => {
     const cmd = {
-        id: generalCommandId,
-        elementId: id,
-        command: "create_element",
+        // id: generalCommandId,
+        // elementId: id,
+        command: 'create_element',
         args: [
+            elementId,
             props.type,
             props.label || '',
-            0
-        ]
-    }
+            0,
+        ],
+    };
 
-    widgets[id] = Object.assign({}, props);
+    widgets[elementId] = Object.assign({}, props);
 
-    enqueueCommand(cmd);
-}
+    // enqueueCommand(cmd);
+    connectionManager.send(cmd);
+};
 
 const updateGtkElement = (elementId, propName, value) => {
     console.log('updateGtkElement', propName, value);
     widgets[elementId] = Object.assign({}, widgets[elementId], { [propName]: value });
 
-    if (typeof value == 'function') {
+    if (typeof value === 'function') {
         return;
     }
 
     const cmd = {
-        id: generalCommandId,
-        elementId,
-        command: "set_" + propName.toLowerCase(),
+        // id: generalCommandId,
+        command: `set_${propName.toLowerCase()}`,
         args: [
+            elementId,
             value.toString(),
-        ]
-    }
+        ],
+    };
 
 
-    enqueueCommand(cmd);
-}
+    // enqueueCommand(cmd);
+    connectionManager.send(cmd);
+};
 
-connection = initConnection();
+// connection = initConnection();
 
 module.exports = {
     appendGtkChild,
