@@ -90,8 +90,10 @@ class ConnectionManager {
     }
 
     async _sendCommand(command) {
+        this._logger.info(`Sending command. Queue length ${this._commandsQueue.length}`);
+
         for (const client of this._listenersPool) {
-            await client.callMethod(command.command, command.args);
+            await client.callMethod(command.method, command.args);
         }
 
         this._commandsQueue.shift();
