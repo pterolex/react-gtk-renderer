@@ -7,9 +7,27 @@ const logger = new Logger('GtkConnection');
 
 const widgets = {};
 
+
+const rpcAPI = {
+    click: (data) => {
+        logger.info(`Received 'click': ${JSON.stringify(data)}`);
+
+        const elementId = data[0];
+
+        const widget = widgets[elementId];
+        console.log('widgets', widgets);
+        console.log('call/onClick', data.elementId, widget);
+
+        if (widget && widget.onClick) {
+            widget.onClick();
+        }
+    },
+};
+
 const connectionManager = new ConnectionManager({
     wsServerPort: config.wssPort,
     logger,
+    rpcAPI,
 });
 
 connectionManager.init();
