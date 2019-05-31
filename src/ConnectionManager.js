@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop, no-restricted-syntax */
 const WebSocket = require('ws');
 
 
@@ -50,7 +51,6 @@ class ConnectionManager {
                     this._logger.verbose(`Message ${JSON.stringify(data)}`);
                 });
 
-
                 const client = new MoleClient({
                     requestTimeout: 1000,
                     transport: new TransportClientWS({ ws }),
@@ -60,13 +60,13 @@ class ConnectionManager {
 
                 this._isInit = true;
 
-                resolve();
-
                 ws.on('close', () => {
                     this._logger.verbose('Client disconnected');
 
                     this._connectionsToMoleClients.delete(ws);
                 });
+
+                resolve({});
             });
 
             await this._wsRPCServer.run();
@@ -100,7 +100,7 @@ class ConnectionManager {
             this._listenersPool.push(moleClient);
         }
 
-        if (this._debuggersPool.length > 0) {
+        if (this._listenersPool.length > 0 && this._debuggersPool.length > 0) {
             this._sendInterval = setInterval(() => {
                 this._sendQueuedCommands();
             }, 100);
@@ -113,8 +113,14 @@ class ConnectionManager {
         this._logger.info(`Sending command. Queue length ${this._commandsQueue.length}`);
         this._logger.info(`Sending command ${JSON.stringify(command)}`);
 
+        this._commandsQueue.shift();
+
         for (const client of this._listenersPool) {
-            client.callMethod(command.method, command.args);
+            try {
+                await client.callMethod(command.method, command.args);
+            } catch (e) {
+                console.error(`Could not send '${command.method}'!`);
+            }
         }
 
         for (const debuggerClient of this._debuggersPool) {
@@ -122,9 +128,6 @@ class ConnectionManager {
 
             this._logger.info(`Response ${JSON.stringify(response)}`);
         }
-
-        this._commandsQueue.shift();
-        // await sleep(100);
     }
 
     _initMoleServer() {
