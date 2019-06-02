@@ -2,6 +2,7 @@
     "extends": "airbnb",
     "rules": {
         "indent": ["error", 4],
+        "max-len": ["error", 120],
         "no-underscore-dangle": 0
     }
 }

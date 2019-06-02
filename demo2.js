@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
 const config = require('./etc/config.js');
@@ -8,65 +9,11 @@ const { Logger } = require('./src/utils/logger');
 
 const logger = new Logger('GtkConnrction');
 
-const rpcAPI = {
-    click: (data) => {
-        logger.info(`Received 'click': ${JSON.stringify(data)}`);
+let webSocketConnection;
 
-        const elementId = data[0];
-        logger.info(`ElementId': ${elementId}`);
-    },
-};
-
-const connectionManager = new ConnectionManager({
-    wsServerPort: config.wssPort,
-    logger,
-    rpcAPI,
-});
-
-connectionManager.init();
-
-const appendGtkChild = (parentId, childId) => {
-    const cmd = {
-        method: 'append_child',
-        args: [
-            parentId,
-            childId,
-        ],
-    };
-
-    connectionManager.send(cmd);
-};
-const createGtkElement = (elementId, props) => {
-    const cmd = {
-        method: 'create_element',
-        args: [
-            elementId,
-            props.type,
-            props.label || '',
-            0,
-        ],
-    };
-
-    connectionManager.send(cmd);
-};
-
-const updateGtkElement = (elementId, propName, value) => {
-    console.log('updateGtkElement', propName, value);
-    if (typeof value === 'function') {
-        return;
-    }
-
-    const cmd = {
-        method: `set_${propName.toLowerCase()}`,
-        args: [
-            elementId,
-            value.toString(),
-        ],
-    };
-
-
-    connectionManager.send(cmd);
-};
+/**
+ * Elements
+ */
 
 const ROOT_ID = 0;
 const DECREASE_BUTTON = 1;
@@ -75,7 +22,54 @@ const INCREASE_BUTTON = 3;
 const LAST_UPDATED_LABEL = 4;
 const GRID_ID = 5;
 
-const getCommands = () => (
+/**
+ * Bizzzzness logic
+ */
+
+let counterValue = 0;
+
+const rpcAPI = {
+    click: (data) => {
+        logger.info(`Received 'click': ${JSON.stringify(data)}`);
+
+        const elementId = parseInt(data[0], 10);
+
+        logger.info(`ElementId: ${elementId}`);
+
+        if (elementId === DECREASE_BUTTON) {
+            counterValue--;
+        }
+
+        if (elementId === INCREASE_BUTTON) {
+            counterValue++;
+        }
+
+        const cmd = {
+            method: 'set_label',
+            args: [
+                COUNTER_LABEL_ID,
+                `Counter = ${counterValue}`,
+            ],
+        };
+
+        return webSocketConnection.send(cmd);
+    },
+};
+
+webSocketConnection = new ConnectionManager({
+    wsServerPort: config.wssPort,
+    logger,
+    rpcAPI,
+});
+
+webSocketConnection.init();
+
+
+/**
+ * IMPORTANT: open debugger after launch
+ */
+
+const getInitialCommands = () => (
     [
         {
             method: 'create_element',
@@ -91,7 +85,7 @@ const getCommands = () => (
             args: [
                 COUNTER_LABEL_ID,
                 'label',
-                'Counter = 0',
+                `Counter = ${counterValue}`,
                 ROOT_ID,
             ],
         },
@@ -161,8 +155,8 @@ const getCommands = () => (
 );
 
 async function sendInitialCommands() {
-    for (const command of getCommands()) {
-        await connectionManager.send(command);
+    for (const command of getInitialCommands()) {
+        await webSocketConnection.send(command);
     }
 
     console.log('Queued all initial commands!');
